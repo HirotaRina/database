@@ -7,14 +7,18 @@ app.set('view engine', 'pug')
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
 app.use(bodyParser.json())
 
-var db = new sqlite3.Database('twitter.db')
+var db = new sqlite3.Database('instagram.db')
 
 app.get('/', function (req, res, next) {
     var query = "\
-        SELECT t.account, u.name, t.datetime, t.content\
-        FROM tweet t, follow f, user u\
-        WHERE t.account = u.account and f.follower_account = 'mob1' and f.followee_account = t.account;\
+        SELECT p.post_id, p.account,u.name, i.photo_id,\
+	(SELECT count(*) FROM follow f WHERE f.follower_id='tomo.y9') as followee_count,\
+        (SELECT count(*) FROM follow f WHERE f.followee_id='tomo.y9') as follower_count,\
+	(SELECT count(*) FROM post p WHERE p.account='tomo.y9') as post_count\
+        FROM post p, user u, include i\
+        WHERE p.account = 'tomo.y9' and p.account=u.account and i.post_id=p.post_id;\
         ";
+
         console.log("DBG:" + query);
     db.all(query, {}, function (err, rows) {
         if (err) {
